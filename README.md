@@ -4,9 +4,18 @@ Machine Learning task From DEPI for predicting the loan approval using Logestic 
 # Project Report: Predicting Loan Approval Using Logistic Regression with Regularization and Hyperparameter Tuning
 
 ## 1. Introduction and Objective
-This project aims to predict loan approval status for applicants based on a set of features, simulating a real-world banking scenario. We compare two machine learning algorithms—Logistic Regression (with L1 and L2 regularization) while applying hyperparameter tuning via GridSearchCV to optimize performance. The focus is on evaluating model effectiveness, the impact of regularization, and interpretability for practical use in loan approval processes.
+## 1. Introduction & Objective
+This project builds a binary classification model to predict whether a loan application will be **approved (Y)** or **rejected (N)** based on applicant features.  
 
-The analysis was conducted in a Jupyter Notebook (Script.ipynb), which includes data loading, preprocessing, model training, evaluation, and visualizations.
+We implement and compare:
+- Logistic Regression with L1 (Lasso) and L2 (Ridge) regularization
+- Hyperparameter-tuned Logistic Regression (GridSearchCV)
+- Decision Tree Classifier (baseline & tuned)
+- Interactive performance comparison using Plotly
+
+The goal is to achieve high accuracy and interpretability while understanding the impact of regularization and tree pruning in a real-world banking use case.
+
+The analysis was conducted in a Jupyter Notebook (Loan Approval Prediction.ipynb), which includes data loading, preprocessing, model training, evaluation, and visualizations.
 
 ## 2. Dataset Description
 The dataset used is the "Loan Prediction Problem Dataset" from Kaggle (available at [https://www.kaggle.com/datasets/ninzaami/loan-predication/data](https://www.kaggle.com/datasets/ninzaami/loan-predication/data)). It consists of 614 records (loan applications) with 13 columns, representing a mix of categorical and numerical features. The target variable is `Loan_Status` (Y for approved, N for not approved), making this a binary classification problem.
@@ -48,36 +57,55 @@ The dataset used is the "Loan Prediction Problem Dataset" from Kaggle (available
 
 Libraries used: pandas, numpy, seaborn, matplotlib, scikit-learn (for preprocessing, models, metrics, and GridSearchCV), plotly (for visualizations).
 
-### 3.2 Model Training (Without GridSearchCV)
-- **Logistic Regression:**
-  - L1 Penalty (Lasso regularization): Encourages sparsity (feature selection).
-  - L2 Penalty (Ridge regularization): Penalizes large coefficients to reduce overfitting.
-  - Default parameters otherwise (e.g., C=1.0).
+#### 3.2 Models Implemented
+| Model                            | Regularization / Tuning                     | Key Hyperparameters Searched                              |
+|-----------------------------------|----------------------------------------------|--------------------------------------------------------------------|
+| Logistic Regression L1            | Lasso (penalty='l1')                         | Default C=1.0                                                      |
+| Logistic Regression L2            | Ridge (penalty='l2')                         | Default C=1.0                                                      |
+| Logistic Regression + GridSearch  | L1 / L2 / ElasticNet                         | C, penalty, solver, l1_ratio                                       |
+| Decision Tree (baseline)          | –                                            | Default settings                                                   |
+| Decision Tree + GridSearch        | Pruning via depth & sample constraints       | max_depth, min_samples_split, min_samples_leaf, criterion, splitter |
 
-### 3.3 Model Training (With GridSearchCV)
-- **Hyperparameter Tuning:**
-  - For Logistic Regression: Grid included `C` [0.01, 0.013, 0.02, 0.03, 0.05, 0.06, 0.07], `penalty` ['l1', 'l2', 'elasticnet'], `solver` ["liblinear", "newton-cg", "lbfgs", "sag", "saga"], `l1_ratio` [0.0, 0.5, 1.0] (for elasticnet).
-- Used GridSearchCV with 5-fold cross-validation on the train set to find best parameters, then refit on full train set and evaluate on test set.
-- Ensures balanced handling of class imbalance via stratified splits.
+GridSearchCV used 5-fold CV on training set.
+### 3.3 Evaluation Metrics
+- Accuracy
+- Precision, Recall, F1-Score
+- AUC-ROC
+- Confusion Matrix
+## 4. Results Summary
 
-### 3.4 Comparison and Analysis
-- Visualizations: Confusion matrices (via seaborn heatmap), bar plots of metrics (via plotly for interactive comparison).
-- Effect of Regularization: L1 reduced coefficients for less important features (e.g., Self_Employed), while L2 smoothed the model without zeroing them out.
-- Hyperparameter Tuning: Improved generalization, reducing overfitting (e.g., lower train-test gap).
-- Number of Experiments Tried: 3 main experiments (Logistic L1, Logistic L2, Logistic GridSearch).
+| Model                            | Accuracy | Precision | Recall | F1-Score | AUC   |
+|----------------------------------|----------|-----------|--------|----------|-------|
+| Logistic Regression L1 (default) | **0.862** | 0.840     | 0.988  | **0.908** | 0.862 |
+| Logistic Regression L2 (default) | 0.797    | 0.794     | 0.953  | 0.866    | 0.833 |
+| Logistic Regression (GridSearch) | **0.862** | 0.840     | 0.988  | **0.908** | 0.862 |
+| Decision Tree (default)          | 0.772    | 0.821     | 0.871  | 0.845    | 0.735 |
+| Decision Tree (GridSearch)       | 0.854    | 0.831     | 0.976  | 0.897    | 0.812 |
 
-- Best Model Overall: Logistic Regression L1 (test accuracy: 0.854, F1: 0.901, AUC: 0.82). 
-- When to Prefer Logistic: For interpretability (e.g., coefficient analysis) and linear patterns. Decision Trees for complex interactions but require pruning.
+**Best Model:** **Logistic Regression with L1 regularization (C ≈ 0.06 after tuning)**  
+→ Highest accuracy & F1, excellent recall (catches almost all approvable loans with very few false negatives).
 
-## 4. Results and Visualizations
-- Performance Metrics Comparison (from Notebook's Plotly Bar Chart):
-  - Logistic GridSearch led in all metrics (Accuracy: 0.82, Precision: 0.81, Recall: 0.95, F1: 0.88, AUC: 0.75).
-- Confusion Matrices: Showed fewer false negatives in tuned models (critical for approvals).
+## 5. Key Insights
+- `Credit_History` is by far the most important feature.
+- L1 regularization successfully performs feature selection (e.g., zeros out `Self_Employed`).
+- Decision Trees overfit heavily without tuning but reach strong performance after pruning.
+- TotalIncome proved more predictive than separate income columns.
+- All models benefit significantly from hyperparameter tuning.
 
-## 5. Conclusion
-The Logistic Regression model L1 without GridSearchCV performed the best overall, achieving a test accuracy of 0.854 and strong F1 score of 0.901, indicating reliable predictions with minimal overfitting.
+## 6. Repository Structure
+```
+Loan-Approval-Prediction/
+├── Loan Approval Prediction.ipynb    # Complete notebook with code & visualizations
+├── Loan_Prediction.csv               # Dataset
+├── README.md                         # This file
+└── requirements.txt (optional)
+```
+## 7. How to Run
+```bash
+pip install -r requirements.txt
+---
 
-**Repository Structure on GitHub:**
-- `Script.ipynb`: Full implementation.
-- `report.md`: This document.
-- `Loan_Prediction.csv`: Dataset CSV (link to Kaggle provided).
+## Conclusion
+The tuned Logistic Regression (L1) model achieves 86.2% accuracy and F1 = 0.908, making it the most reliable and interpretable choice for deployment in a loan approval system.
+Feel free to fork, improve, or deploy!
+Happy coding!
