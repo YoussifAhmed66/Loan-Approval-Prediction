@@ -4,7 +4,6 @@ Machine Learning task From DEPI for predicting the loan approval using Logestic 
 # Project Report: Predicting Loan Approval Using Logistic Regression with Regularization and Hyperparameter Tuning
 
 ## 1. Introduction and Objective
-## 1. Introduction & Objective
 This project builds a binary classification model to predict whether a loan application will be **approved (Y)** or **rejected (N)** based on applicant features.  
 
 We implement and compare:
